@@ -105,13 +105,44 @@ public UnifiedLoginResponse combineLogin(UnifiedLoginRequest loginRequest) {
         Optional<CarRentalUser> userOpt = carRentalRepository.findByPhone(mobile);
         if (userOpt.isPresent()) {
             CarRentalUser user = userOpt.get();
-            if (passwordEncoder.matches(password, user.getPassword())) {
+            String stored = user.getPassword();
+            boolean matched = false;
+
+            // Try normal (hashed) match first
+            if (stored != null) {
+                try {
+                    matched = passwordEncoder.matches(password, stored);
+                } catch (Exception ignored) {
+                    // fall through to legacy check
+                }
+            }
+
+            // Legacy fallback: stored password is plaintext (not bcrypt)
+            if (!matched && stored != null
+                    && !stored.startsWith("$2a$")
+                    && !stored.startsWith("$2b$")
+                    && !stored.startsWith("$2y$")) {
+                if (password.equals(stored)) {
+                    matched = true;
+                    // Migrate: encode and save the password for future logins
+                    try {
+                        String encoded = passwordEncoder.encode(password);
+                        user.setPassword(encoded);
+                        carRentalRepository.save(user);
+                    } catch (Exception ignored) {
+                        // If migration fails, still allow this login
+                    }
+                }
+            }
+
+            if (matched) {
                 response.setStatus("success");
                 response.setRole(user.getRole());
                 response.setUserId(user.getId());
                 response.setUsername(user.getUserName());
                 return response;
             }
+
             response.setStatus("invalid_password");
             response.setMessage("Wrong password for user account");
             return response;

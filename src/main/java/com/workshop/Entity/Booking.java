@@ -13,6 +13,10 @@ import com.workshop.CarRental.Entity.CarRentalUser;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -75,18 +79,22 @@ private int days;
 
 private int collection;
 
-private String driverEnterOtpTimePreStarted;
+@Enumerated(EnumType.STRING)
+private TripStatus tripStatus;
 
-private String odoometerStarted;
+private String startOtp;
+private String endOtp;
 
-private String odoometerEnterTimeStarted;
+private String startOdometer;
+private String endOdometer;
 
-private String driverEnterOtpTimePostTrip;
+private LocalDateTime driverEnterOtpTimePreStarted;
 
-private String odometerEnding;
+private LocalDateTime odoometerEnterTimeStarted;
 
+private LocalDateTime driverEnterOtpTimePostTrip;
 
-private String odoometerEnterTimeEnding;
+private LocalDateTime odoometerEnterTimeEnding;
 
 private String packageName;
 
@@ -551,81 +559,97 @@ this.carrier = carrier;
 
 
 
-public String getDriverEnterOtpTimePreStarted() {
+public LocalDateTime getDriverEnterOtpTimePreStarted() {
 return driverEnterOtpTimePreStarted;
 }
 
 
 
-public void setDriverEnterOtpTimePreStarted(String driverEnterOtpTimePreStarted) {
-this.driverEnterOtpTimePreStarted = driverEnterOtpTimePreStarted;
-}
+	public void setDriverEnterOtpTimePreStarted(LocalDateTime driverEnterOtpTimePreStarted) {
+		this.driverEnterOtpTimePreStarted = driverEnterOtpTimePreStarted;
+	}
 
 
 
-public String getOdoometerStarted() {
-return odoometerStarted;
-}
-
-
-
-public void setOdoometerStarted(String odoometerStarted) {
-this.odoometerStarted = odoometerStarted;
-}
-
-
-
-public String getOdoometerEnterTimeStarted() {
-return odoometerEnterTimeStarted;
-}
+	public LocalDateTime getOdoometerEnterTimeStarted() {
+		return odoometerEnterTimeStarted;
+	}
 
 
 
 
 
-public void setOdoometerEnterTimeStarted(String odoometerEnterTimeStarted) {
-this.odoometerEnterTimeStarted = odoometerEnterTimeStarted;
-}
+	public void setOdoometerEnterTimeStarted(LocalDateTime odoometerEnterTimeStarted) {
+		this.odoometerEnterTimeStarted = odoometerEnterTimeStarted;
+	}
 
 
 
-public String getDriverEnterOtpTimePostTrip() {
-return driverEnterOtpTimePostTrip;
-}
+	public LocalDateTime getDriverEnterOtpTimePostTrip() {
+		return driverEnterOtpTimePostTrip;
+	}
 
 
 
-public void setDriverEnterOtpTimePostTrip(String driverEnterOtpTimePostTrip) {
-this.driverEnterOtpTimePostTrip = driverEnterOtpTimePostTrip;
-}
+	public void setDriverEnterOtpTimePostTrip(LocalDateTime driverEnterOtpTimePostTrip) {
+		this.driverEnterOtpTimePostTrip = driverEnterOtpTimePostTrip;
+	}
 
 
 
-public String getOdometerEnding() {
-return odometerEnding;
-}
+	public LocalDateTime getOdoometerEnterTimeEnding() {
+		return odoometerEnterTimeEnding;
+	}
 
 
 
-public void setOdometerEnding(String odometerEnding) {
-this.odometerEnding = odometerEnding;
-}
+		public void setOdoometerEnterTimeEnding(LocalDateTime odoometerEnterTimeEnding) {
+		this.odoometerEnterTimeEnding = odoometerEnterTimeEnding;
+	}
+
+	public String getStartOdometer() {
+		return startOdometer;
+	}
+
+	public void setStartOdometer(String startOdometer) {
+		this.startOdometer = startOdometer;
+	}
+
+	public String getEndOdometer() {
+		return endOdometer;
+	}
+
+	public void setEndOdometer(String endOdometer) {
+		this.endOdometer = endOdometer;
+	}
+
+	public String getStartOtp() {
+		return startOtp;
+	}
+
+	public void setStartOtp(String startOtp) {
+		this.startOtp = startOtp;
+	}
+
+	public String getEndOtp() {
+		return endOtp;
+	}
+
+	public void setEndOtp(String endOtp) {
+		this.endOtp = endOtp;
+	}
+
+	public TripStatus getTripStatus() {
+		return tripStatus;
+	}
+
+	public void setTripStatus(TripStatus tripStatus) {
+		this.tripStatus = tripStatus;
+	}
 
 
 
-public String getOdoometerEnterTimeEnding() {
-return odoometerEnterTimeEnding;
-}
-
-
-
-public void setOdoometerEnterTimeEnding(String odoometerEnterTimeEnding) {
-this.odoometerEnterTimeEnding = odoometerEnterTimeEnding;
-}
-
-
-
-public int getCollection() {
+	public int getCollection() {
 return collection;
 }
 
@@ -753,9 +777,9 @@ return "Booking [id=" + id + ", fromLocation=" + fromLocation + ", toLocation=" 
 + txnId + ", payment=" + payment + ", dateEnd=" + dateEnd + ", timeEnd=" + timeEnd + ", bookingType="
 + bookingType + ", description=" + description + ", carrier=" + carrier + ", companyName=" + companyName
 + ", days=" + days + ", collection=" + collection + ", driverEnterOtpTimePreStarted="
-+ driverEnterOtpTimePreStarted + ", odoometerStarted=" + odoometerStarted
++ driverEnterOtpTimePreStarted + ", startOdometer=" + startOdometer
 + ", odoometerEnterTimeStarted=" + odoometerEnterTimeStarted + ", driverEnterOtpTimePostTrip="
-+ driverEnterOtpTimePostTrip + ", odometerEnding=" + odometerEnding + ", odoometerEnterTimeEnding="
++ driverEnterOtpTimePostTrip + ", endOdometer=" + endOdometer + ", odoometerEnterTimeEnding="
 + odoometerEnterTimeEnding + ", packageName=" + packageName + ", vendor=" + vendor + ", vendorCab="
 + vendorCab + ", vendorDriver=" + vendorDriver + ", penalty=" + penalty + ", cabAdmin=" + cabAdmin
 + ", driveAdmin=" + driveAdmin + ", carRentalUser=" + carRentalUser + ", paymentMethod=" + paymentMethod
@@ -771,8 +795,8 @@ String bookid, String car, String baseAmount, Integer amount, Integer status, St
 Integer nightCharges, Integer gst, Integer serviceCharge, String offer, Integer offerPartial,
 String offerAmount, String txnId, String payment, LocalDate dateEnd, String timeEnd, String bookingType,
 String description, String carrier, String companyName, int days, int collection,
-String driverEnterOtpTimePreStarted, String odoometerStarted, String odoometerEnterTimeStarted,
-String driverEnterOtpTimePostTrip, String odometerEnding, String odoometerEnterTimeEnding,
+LocalDateTime driverEnterOtpTimePreStarted, String startOdometer, LocalDateTime odoometerEnterTimeStarted,
+LocalDateTime driverEnterOtpTimePostTrip, String endOdometer, LocalDateTime odoometerEnterTimeEnding,
 String packageName, Vendor vendor, VendorCabs vendorCab, VendorDrivers vendorDriver, Penalty penalty,
 CabAdmin cabAdmin, DriveAdmin driveAdmin, CarRentalUser carRentalUser, String paymentMethod,
 String paymentType, String paymentStatus, Integer paymentAmount, Integer remainingAmount,
@@ -818,10 +842,10 @@ this.companyName = companyName;
 this.days = days;
 this.collection = collection;
 this.driverEnterOtpTimePreStarted = driverEnterOtpTimePreStarted;
-this.odoometerStarted = odoometerStarted;
+this.startOdometer = startOdometer;
 this.odoometerEnterTimeStarted = odoometerEnterTimeStarted;
 this.driverEnterOtpTimePostTrip = driverEnterOtpTimePostTrip;
-this.odometerEnding = odometerEnding;
+this.endOdometer = endOdometer;
 this.odoometerEnterTimeEnding = odoometerEnterTimeEnding;
 this.packageName = packageName;
 this.vendor = vendor;

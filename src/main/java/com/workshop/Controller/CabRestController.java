@@ -119,6 +119,9 @@ public class CabRestController {
     @Autowired
     private OneFiftyService oneFiftyService;
 
+    	@Autowired
+	private com.workshop.CarRental.Controller.LiveTrackingController liveTrackingController;
+
     @Value("${google.maps.api.key}")
     private String apiKey;
 
@@ -1736,7 +1739,7 @@ public class CabRestController {
         return ResponseEntity.ok(bookings);
     }
 
-    @GetMapping("/by-user/{id}")
+    @GetMapping("/bookings/by-user/{id}")
     public ResponseEntity<List<Booking>> getBookingsByCarRental(
             @PathVariable int id) {
 
@@ -1942,6 +1945,17 @@ public class CabRestController {
                     tripType,
                     phone);
 
+            // Send real-time WebSocket notification to admin
+            liveTrackingController.sendAdminBookingNotification(
+                    bookid,
+                    name,
+                    pickupLocation,
+                    dropLocation,
+                    total,
+                    modelName + " " + modelType,
+                    tripType,
+                    phone);
+
             return ResponseEntity.ok(Map.of(
                     "status", "success",
                     "bookingId", bookid,
@@ -2118,6 +2132,17 @@ public class CabRestController {
 
             sendWhatsAppBookingConfirmation(phone, bookid, name, pickupLocation,
                     dropLocation, date, time, tripType, price);
+
+            // Send real-time WebSocket notification to admin
+            liveTrackingController.sendAdminBookingNotification(
+                    bookid,
+                    name,
+                    pickupLocation,
+                    dropLocation,
+                    price,
+                    modelType,
+                    tripType,
+                    phone);
 
             return ResponseEntity.ok(Map.of(
                     "status", "success",
@@ -2461,13 +2486,13 @@ public class CabRestController {
                     dropLoc = latestBooking.getToLocation();
                 }
 
-                response.put("pickupLocation", pickupLoc != null ? pickupLoc : "Unknown Pickup");
-                response.put("dropLocation", dropLoc != null ? dropLoc : "Unknown Drop");
+                response.put("pickup", pickupLoc != null ? pickupLoc : "Unknown Pickup");
+                response.put("drop", dropLoc != null ? dropLoc : "Unknown Drop");
                 response.put("tripType", latestBooking.getTripType());
                 response.put("date", latestBooking.getDate());
                 response.put("time", latestBooking.getTime());
-                response.put("price", latestBooking.getAmount());
-                response.put("phone", latestBooking.getPhone());
+                response.put("amount", latestBooking.getAmount());
+                response.put("customerPhone", latestBooking.getPhone());
                 response.put("carType", latestBooking.getCar());
                 response.put("timestamp", System.currentTimeMillis());
 

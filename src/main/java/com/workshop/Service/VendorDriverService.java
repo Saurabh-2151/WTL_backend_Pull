@@ -20,7 +20,7 @@ public class VendorDriverService {
 	
 	
 	public VendorDrivers addVendorsDriver(VendorDrivers vendorDrivers) {
-		vendorDrivers.setPassword("vendorDriver@123");
+		// Preserve password provided by caller (e.g., last 6 of DL set in controller)
 		return this.vendorDriverRepo.save(vendorDrivers);
 	}
 	

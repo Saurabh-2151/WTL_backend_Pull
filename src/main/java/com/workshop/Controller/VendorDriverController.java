@@ -131,6 +131,13 @@ public ResponseEntity<?> addVendorDriver(
 
         driver.setVendor(vendor);
 
+        // ✅ Set initial password as last 6 digits of DL number
+        String last6 = null;
+        if (dLNo != null) {
+            last6 = dLNo.length() >= 6 ? dLNo.substring(dLNo.length() - 6) : dLNo;
+        }
+        driver.setPassword(last6);
+
         // ✅ Send Email
         String subject = "Driver Registration Successfully - " + driver.getDriverName();
         String message = "<html><body>"
@@ -143,7 +150,7 @@ public ResponseEntity<?> addVendorDriver(
             + "<li><strong>DL No:</strong> " + driver.getdLNo() + "</li>"
             + "<li><strong>PVC No:</strong> " + driver.getPvcNo() + "</li>"
             + "<li><strong>Email:</strong> " + driver.getEmailId() + "</li>"
-            + "<li><strong>Password:</strong> vendorDriver@123</li>"
+            + "<li><strong>Password (DL last 6):</strong> " + last6 + "</li>"
             + "</ul>"
             + "<p>Please do not share these credentials with anyone.</p>"
             + "<hr><p>For support, contact wtltourism@gmail.com</p>"

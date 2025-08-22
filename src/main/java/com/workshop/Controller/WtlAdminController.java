@@ -1,6 +1,7 @@
 package com.workshop.Controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -155,7 +156,7 @@ public class WtlAdminController {
         return citiesService.getAllCities();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/city/{id}")
     public Optional<Cities> getCityById(@PathVariable Long id) {
         return citiesService.getCityById(id);
     }
@@ -705,12 +706,12 @@ public class WtlAdminController {
         booking.setName(name);
         booking.setEmail(email);
         booking.setPhone(phone);
-        booking.setDriverEnterOtpTimePreStarted(driverEnterOtpTimePreStarted);
-        booking.setOdoometerStarted(odoometerStarted);
-        booking.setOdoometerEnterTimeStarted(odoometerEnterTimeStarted);
-        booking.setDriverEnterOtpTimePostTrip(driverEnterOtpTimePostTrip);
-        booking.setOdometerEnding(odometerEnding);
-        booking.setOdoometerEnterTimeEnding(odoometerEnterTimeEnding);
+        booking.setDriverEnterOtpTimePreStarted(LocalDateTime.parse(driverEnterOtpTimePreStarted));
+        booking.setStartOdometer(odoometerStarted);
+        booking.setOdoometerEnterTimeStarted(LocalDateTime.parse(odoometerEnterTimeStarted));
+        booking.setDriverEnterOtpTimePostTrip(LocalDateTime.parse(driverEnterOtpTimePostTrip));
+        booking.setEndOdometer(odometerEnding);
+        booking.setOdoometerEnterTimeEnding(LocalDateTime.parse(odoometerEnterTimeEnding));
 
         // ✅ Set the saved CarRentalUser
         booking.setCarRentalUser(carRental);

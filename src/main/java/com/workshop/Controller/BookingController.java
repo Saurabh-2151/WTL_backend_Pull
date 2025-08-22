@@ -68,7 +68,7 @@ import com.workshop.Service.UserDetailServiceImpl;
 import com.workshop.Service.TripRateService;
 
 @Controller
-@CrossOrigin(origins = "http://localhost:3001,http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3001,http://localhost:3000,https://api.worldtriplink.com")
 public class BookingController {
 	@Autowired
 	BookingService ser;
@@ -740,8 +740,9 @@ public class BookingController {
 	}
 
 	@RequestMapping("favicon.ico")
-	public void returnNoFavicon() {
-		// Do nothing, just return 404
+	public ResponseEntity<Void> returnNoFavicon() {
+		// Return 204 No Content instead of trying to render a view
+		return ResponseEntity.noContent().build();
 	}
 
 	@PostMapping("/getBooking")

@@ -18,9 +18,9 @@ public class SitemapService {
     public List<String> getAllUrls() {
         List<City> cities = cityRepo.findAll();
         List<String> urls = new ArrayList<>();
-        urls.add("https://worldtriplink.com/");
-        for (City city: cities) {
-            urls.add("https://worldtriplink.com/city/"+city.getCity());
+        urls.add("https://api.worldtriplink.com/");
+        for (City city : cities) {
+            urls.add("https://api.worldtriplink.com/city/" + city.getCity());
         }
         return urls;
     }

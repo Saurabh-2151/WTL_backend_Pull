@@ -409,10 +409,7 @@ public class BookingService {
 
         LocalDateTime now = LocalDateTime.now();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        String formattedDateTime = now.format(formatter);
-
-        booking.setDriverEnterOtpTimePreStarted(formattedDateTime);
+        booking.setDriverEnterOtpTimePreStarted(now);
         return this.repo.save(booking);
     }
 
@@ -424,9 +421,7 @@ public class BookingService {
 
         LocalDateTime now = LocalDateTime.now();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        String formattedDateTime = now.format(formatter);
-        booking.setDriverEnterOtpTimePostTrip(formattedDateTime);
+        booking.setDriverEnterOtpTimePostTrip(now);
         return this.repo.save(booking);
 
     }
@@ -438,10 +433,8 @@ public class BookingService {
 
         LocalDateTime now = LocalDateTime.now();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        String formattedDateTime = now.format(formatter);
-        booking.setOdoometerEnterTimeStarted(formattedDateTime);
-        booking.setOdoometerStarted(meter);
+        booking.setOdoometerEnterTimeStarted(now);
+        booking.setStartOdometer(meter);
         return this.repo.save(booking);
 
     }
@@ -452,11 +445,9 @@ public class BookingService {
 
         LocalDateTime now = LocalDateTime.now();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        String formattedDateTime = now.format(formatter);
-        booking.setOdoometerEnterTimeEnding(formattedDateTime);
+        booking.setOdoometerEnterTimeEnding(now);
 
-        booking.setOdometerEnding(meter);
+        booking.setEndOdometer(meter);
         return this.repo.save(booking);
     }
 

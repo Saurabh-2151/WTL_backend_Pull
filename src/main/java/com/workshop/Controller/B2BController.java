@@ -234,7 +234,7 @@ public class B2BController {
    
     private String buildFullUrl(String fileName) {
         if (fileName != null) {
-            return "http://localhost:8282/uploads/" + fileName;
+            return "https://api.worldtriplink.com/uploads/" + fileName;
         }
         return null;
     }

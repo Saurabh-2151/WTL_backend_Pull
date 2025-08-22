@@ -2,6 +2,7 @@ package com.workshop.Entity;
 
 import java.util.List;
 
+import jakarta.persistence.Column;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -51,8 +52,10 @@ private String role="ADMIN_DRIVER";
 
 	private String password;
 
+	@Column(nullable = true)
 	private Double driverLatitude;
 
+	@Column(nullable = true)
 	private Double driverLongitude;
 
 	@JsonIgnore
@@ -277,19 +280,13 @@ private String role="ADMIN_DRIVER";
 		return driverLatitude;
 	}
 
-
-
 	public void setDriverLatitude(Double driverLatitude) {
 		this.driverLatitude = driverLatitude;
 	}
 
-
-
 	public Double getDriverLongitude() {
 		return driverLongitude;
 	}
-
-
 
 	public void setDriverLongitude(Double driverLongitude) {
 		this.driverLongitude = driverLongitude;
