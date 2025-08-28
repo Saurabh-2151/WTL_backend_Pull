@@ -5,6 +5,7 @@ import com.workshop.CarRental.Repository.CarRentalRepository;
 import com.workshop.Entity.Booking;
 import com.workshop.Repo.BookingRepo;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +71,21 @@ public CarRentalUser getCarRentalUserById(int id){
     return this.carRentalRepository.findById(id).get();
 }
 
+public boolean deleteCarRentalUser(int id) {
+    // Ensure user exists
+    this.carRentalRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("CarRentalUser not found with id: " + id));
 
+    // Detach bookings to avoid FK constraint violations
+    List<Booking> bookings = this.bookingRepository.findByCarRentalUserId(id);
+    if (bookings != null && !bookings.isEmpty()) {
+        for (Booking b : bookings) {
+            b.setCarRentalUser(null);
+        }
+        this.bookingRepository.saveAll(bookings);
+    }
 
+    this.carRentalRepository.deleteById(id);
+    return true;
+}
 }

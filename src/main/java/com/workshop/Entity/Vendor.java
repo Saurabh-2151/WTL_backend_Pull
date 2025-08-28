@@ -1,5 +1,6 @@
 package com.workshop.Entity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,9 +60,9 @@ public class Vendor {
 	
 	@Column(name = "fcm_token")
 	private String fcmToken;
-	
-	
-	
+
+    @Column(name = "fcm_updated_at")
+    private LocalDateTime fcmUpdatedAt;
 
 
     
@@ -297,6 +298,14 @@ public class Vendor {
 	public void setFcmToken(String fcmToken) {
 		this.fcmToken = fcmToken;
 	}
+
+    public LocalDateTime getFcmUpdatedAt() {
+        return fcmUpdatedAt;
+    }
+
+    public void setFcmUpdatedAt(LocalDateTime fcmUpdatedAt) {
+        this.fcmUpdatedAt = fcmUpdatedAt;
+    }
 
     
 

@@ -221,14 +221,15 @@ public class BookingService {
 
         try {
             String response = FirebaseMessaging.getInstance().send(message);
-            System.out.println("Notification sent: " + response);
+            String tokenPrefix = token == null ? "null" : token.substring(0, Math.min(12, token.length()));
+            System.out.println("[AdminSDK][FCM] Notification sent. tokenPrefix=" + tokenPrefix + " title='" + title + "' response=" + response);
         } catch (FirebaseMessagingException e) {
-            if (e.getErrorCode().equals("registration-token-not-registered")) {
-                // Remove the invalid token from your database
-
-                System.out.println("Removed invalid FCM token: " + token);
+            String tokenPrefix = token == null ? "null" : token.substring(0, Math.min(12, token.length()));
+            System.out.println("[AdminSDK][FCM] Failed to send message. tokenPrefix=" + tokenPrefix +
+                    " errorCode=" + e.getErrorCode() + " message=" + e.getMessage());
+            if ("registration-token-not-registered".equals(e.getErrorCode())) {
+                System.out.println("[AdminSDK][FCM] Consider removing invalid token from DB: " + token);
             }
-            System.out.println("Failed to send FCM message");
         }
     }
 

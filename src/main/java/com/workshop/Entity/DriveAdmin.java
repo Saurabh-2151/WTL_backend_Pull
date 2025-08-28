@@ -1,6 +1,7 @@
 package com.workshop.Entity;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -58,6 +59,12 @@ private String role="ADMIN_DRIVER";
 	@Column(nullable = true)
 	private Double driverLongitude;
 
+    @Column(nullable = true, length = 255)
+    private String fcmToken;
+
+    @Column(nullable = true)
+    private LocalDateTime fcmUpdatedAt;
+
 	@JsonIgnore
 	@OneToMany(mappedBy = "driveAdmin")
 	@JsonBackReference
@@ -68,14 +75,10 @@ private String role="ADMIN_DRIVER";
 		// TODO Auto-generated constructor stub
 	}
 
-	
-
-	
-
 	public DriveAdmin(int id, String DriverName, String contactNo, String AltMobNum, String emailId, String Adress,
 			String aadhaNo, String drLicenseNo, String pvcNo2, String DriverImgSelfie, String Aadhar,
 			String DrLicenceNum, String pvcNo, String otherDetails, String status, String role, String password,
-			Double driverLatitude, Double driverLongitude, List<Booking> booking) {
+			Double driverLatitude, Double driverLongitude, List<Booking> booking, String fcmToken, LocalDateTime fcmUpdatedAt) {
 		this.id = id;
 		this.DriverName = DriverName;
 		this.contactNo = contactNo;
@@ -96,11 +99,9 @@ private String role="ADMIN_DRIVER";
 		this.driverLatitude = driverLatitude;
 		this.driverLongitude = driverLongitude;
 		this.booking = booking;
+		this.fcmToken = fcmToken;
+		this.fcmUpdatedAt = fcmUpdatedAt;
 	}
-
-
-
-
 
 	public int getId() {
 		return id;
@@ -190,91 +191,61 @@ private String role="ADMIN_DRIVER";
 		this.emailId = emailId;
 	}
 
-
-
 	public String getAadhaNo() {
 		return aadhaNo;
 	}
-
-
 
 	public void setAadhaNo(String aadhaNo) {
 		this.aadhaNo = aadhaNo;
 	}
 
-
-
 	public String getDrLicenseNo() {
 		return drLicenseNo;
 	}
-
-
 
 	public void setDrLicenseNo(String drLicenseNo) {
 		this.drLicenseNo = drLicenseNo;
 	}
 
-
-
 	public String getPvcNo2() {
 		return pvcNo2;
 	}
-
-
 
 	public void setPvcNo2(String pvcNo2) {
 		this.pvcNo2 = pvcNo2;
 	}
 
-
-
 	public String getStatus() {
 		return status;
 	}
-
-
 
 	public void setStatus(String status) {
 		this.status = status;
 	}
 
-
-
 	public List<Booking> getBooking() {
 		return booking;
 	}
-
-
 
 	public void setBooking(List<Booking> booking) {
 		this.booking = booking;
 	}
 
-
-
 	public String getRole() {
 		return role;
 	}
-
-
 
 	public void setRole(String role) {
 		this.role = role;
 	}
 
-
-
 	public String getPassword() {
 		return password;
 	}
 
-
-
 	public void setPassword(String password) {
 		this.password = password;
 	}
-
-
 
 	public Double getDriverLatitude() {
 		return driverLatitude;
@@ -290,12 +261,21 @@ private String role="ADMIN_DRIVER";
 
 	public void setDriverLongitude(Double driverLongitude) {
 		this.driverLongitude = driverLongitude;
-	} 
-	
-	
-	
-	
-	
-	
-	
+	}
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
+
+    public LocalDateTime getFcmUpdatedAt() {
+        return fcmUpdatedAt;
+    }
+
+    public void setFcmUpdatedAt(LocalDateTime fcmUpdatedAt) {
+        this.fcmUpdatedAt = fcmUpdatedAt;
+    }
 }

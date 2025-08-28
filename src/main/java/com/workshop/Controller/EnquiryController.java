@@ -3,6 +3,7 @@ package com.workshop.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +16,7 @@ import com.workshop.Service.EnquiryService;
 
 @RestController
 public class EnquiryController {
-    
+   
     @Autowired
     private EnquiryService enquiryService;
 
@@ -34,11 +35,10 @@ public class EnquiryController {
         return this.enquiryService.getEnquiryById(id);
     }
 
-    // @DeleteMapping("/deleteEnquiry/{id}")
-    // public void deleteEnquiry(@PathVariable int id){
-    //     this.enquiryService.deleteEnquiry(id);
-    // }
+    @DeleteMapping("/deleteEnquiry/{id}")
+    public void deleteEnquiry(@PathVariable int id){
+        this.enquiryService.deleteEnquiry(id);
+    }
 
-    
+   
 }
-

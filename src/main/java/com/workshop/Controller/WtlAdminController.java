@@ -61,9 +61,11 @@ import com.workshop.Service.BookingService;
 import com.workshop.Service.CabInfoService;
 import com.workshop.Service.CitiesService;
 import com.workshop.Service.EmailService;
+import com.workshop.Service.NotificationService;
 import com.workshop.Service.PopupService;
 import com.workshop.Service.SmsService;
 import com.workshop.Service.StatesService;
+import com.workshop.Service.TripRateService;
 import com.workshop.Service.TripService;
 import com.workshop.Service.UserDetailServiceImpl;
 import com.workshop.Service.VendorService;
@@ -72,15 +74,15 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 
-import com.workshop.Service.TripRateService;
-
 @RestController
-// @RequestMapping
 public class WtlAdminController {
 
     private final AuthenticationManagerBuilder authenticationManager;
     @Autowired
     BookingService ser;
+
+    @Autowired
+    private BookingService bookingService;
 
     @Autowired
     private TripService tripSer;
@@ -120,6 +122,9 @@ public class WtlAdminController {
 
     @Autowired
     VendorService vendorSer;
+
+    @Autowired
+    private NotificationService notificationService;
 
     WtlAdminController(AuthenticationManagerBuilder authenticationManager) {
         this.authenticationManager = authenticationManager;
@@ -248,60 +253,11 @@ public class WtlAdminController {
         return ResponseEntity.ok(responseMessage); // Return 200 OK with the success message
     }
 
-    // @PostMapping("/getPrice")
-    // public List<Trip> getPrice(@RequestBody Map<String, String> requestBody) {
-    // String to = requestBody.get("to");
-    // String from = requestBody.get("from");
-    // String tripType = requestBody.get("tripType");
-
-    // String city1 = userService.getLongNameByCity(to, apiKey);
-    // String[] parts = city1.split(" ");
-    // String cityName = parts[0];
-    // String city2 = userService.getLongNameByCity(from, apiKey);
-    // String[] parts1 = city2.split(" ");
-    // String cityName1 = parts1[0];
-
-    // System.out.println(city1);
-    // System.out.println(city2);
-    // System.out.println(cityName);
-    // System.out.println(cityName1);
-
-    // if ("oneWay".equals(tripType)) {
-    // return tripSer.getonewayTrip(cityName, cityName1);
-    // } else if ("roundTrip".equals(tripType)) {
-    // return tripSer.getRoundTrip(cityName, cityName1);
-    // } else {
-    // // Handle other cases or return an empty list if needed
-    // return new ArrayList<>();
-    // }
-    // }
-
-    @Autowired
-    private CabInfoService cabInfoService;
-
-    @Autowired
-    private BookingService bookingService;
-
     @GetMapping("/details")
     public ResponseEntity<List<Booking>> getAllBookings() {
         List<Booking> bookings = bookingService.getAllBookings();
         return ResponseEntity.ok(bookings); // Return the list of bookings with HTTP 200 OK status
     }
-
-    // @GetMapping("/booking/{id}") // Define the path variable for booking ID
-    // public ResponseEntity<Booking> getBookingById(@PathVariable int id) {
-    // // Fetch the booking by ID using the service
-    // Booking booking = bookingService.findBookingbyId(id);
-
-    // // Check if the booking is found
-    // if (booking != null) {
-    // return new ResponseEntity<>(booking, HttpStatus.OK); // Return the booking
-    // with a 200 OK status
-    // } else {
-    // return new ResponseEntity<>(HttpStatus.NOT_FOUND); // If not found, return
-    // 404 Not Found
-    // }
-    // }
 
     @GetMapping("/booking/{id}")
     public ResponseEntity<BookingDTO> getBookingSById(@PathVariable int id) {
@@ -372,11 +328,38 @@ public class WtlAdminController {
             @PathVariable Long vendorId) {
 
         // Call the service method to assign vendor
+        System.out.println("[API] assignVendorToBooking bookingId=" + bookingId + " vendorId=" + vendorId);
         Booking updatedBooking = bookingService.assignVendorToBooking(bookingId, vendorId);
 
         if (updatedBooking == null) {
             // If the booking or vendor was not found, return a 404 Not Found
             return ResponseEntity.notFound().build();
+        }
+
+        // Try to notify the assigned vendor via FCM if token exists
+        try {
+            Vendor assignedVendor = vendorSer.getVendorById(vendorId);
+            System.out.println("[API] assignVendorToBooking -> assignedVendor=" + (assignedVendor == null ? "null" : assignedVendor.getId())
+                    + " hasToken=" + (assignedVendor != null && assignedVendor.getFcmToken() != null));
+            if (assignedVendor != null && assignedVendor.getFcmToken() != null && !assignedVendor.getFcmToken().isBlank()) {
+                Map<String, String> data = new HashMap<>();
+                data.put("type", "BOOKING_ASSIGNED");
+                data.put("bookingId", String.valueOf(updatedBooking.getBookid()));
+                data.put("pickup", String.valueOf(updatedBooking.getUserPickup()));
+                data.put("drop", String.valueOf(updatedBooking.getUserDrop()));
+                data.put("tripType", String.valueOf(updatedBooking.getTripType()));
+                data.put("date", String.valueOf(updatedBooking.getDate()));
+                data.put("time", String.valueOf(updatedBooking.getTime()));
+
+                String title = "New Booking Assigned";
+                String body = "Booking #" + updatedBooking.getBookid() + " has been assigned to you.";
+                String vtk = assignedVendor.getFcmToken();
+                System.out.println("[API] Sending FCM to vendorId=" + assignedVendor.getId() + " tokenPrefix="
+                        + vtk.substring(0, Math.min(12, vtk.length())));
+                notificationService.sendToToken(assignedVendor.getFcmToken(), title, body, data);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         // If the vendor is assigned successfully, return the updated booking
@@ -394,9 +377,98 @@ public class WtlAdminController {
         }
 
         user.setFcmToken(token);
+        // record update time for traceability
+        user.setFcmUpdatedAt(LocalDateTime.now());
         vendorSer.saveVendor(user);
 
-        return ResponseEntity.ok("Token saved");
+        return ResponseEntity.ok("Token saved at " + user.getFcmUpdatedAt());
+    }
+
+    @PostMapping("/test-notify")
+    public ResponseEntity<?> testNotify(@RequestBody Map<String, Object> payload) {
+        try {
+            String token = (String) payload.get("token");
+            String title = (String) payload.getOrDefault("title", "Test Notification");
+            String body = (String) payload.getOrDefault("body", "This is a test message");
+
+            @SuppressWarnings("unchecked")
+            Map<String, String> data = (Map<String, String>) payload.getOrDefault("data", new HashMap<String, String>());
+
+            if (token == null || token.isBlank()) {
+                return ResponseEntity.badRequest().body("token is required");
+            }
+
+            boolean ok = notificationService.sendToToken(token, title, body, data);
+            return ResponseEntity.ok(Map.of("sent", ok));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed: " + ex.getMessage());
+        }
+    }
+
+    @PostMapping("/test-notify-admin")
+    public ResponseEntity<?> testNotifyAdmin(@RequestBody Map<String, Object> payload) {
+        try {
+            String token = (String) payload.get("token");
+            String title = (String) payload.getOrDefault("title", "Test Notification");
+            String body = (String) payload.getOrDefault("body", "This is a test message");
+
+            @SuppressWarnings("unchecked")
+            Map<String, String> data = (Map<String, String>) payload.getOrDefault("data", new HashMap<String, String>());
+
+            if (token == null || token.isBlank()) {
+                return ResponseEntity.badRequest().body("token is required");
+            }
+
+            // Build Notification (for general clients) and Webpush config (for browsers)
+            com.google.firebase.messaging.Notification notification = com.google.firebase.messaging.Notification.builder()
+                    .setTitle(title)
+                    .setBody(body)
+                    .build();
+
+            // Explicit Webpush config helps Chrome display notifications in background
+            com.google.firebase.messaging.WebpushNotification webpushNotification =
+                    new com.google.firebase.messaging.WebpushNotification(
+                            title,
+                            body,
+                            "/file.svg" // icon path served from vendor/public
+                    );
+
+            com.google.firebase.messaging.WebpushFcmOptions fcmOptions =
+                    com.google.firebase.messaging.WebpushFcmOptions.withLink("/Dashboard");
+
+            com.google.firebase.messaging.WebpushConfig webpushConfig =
+                    com.google.firebase.messaging.WebpushConfig.builder()
+                            .setNotification(webpushNotification)
+                            .putHeader("TTL", "86400")
+                            .setFcmOptions(fcmOptions)
+                            .build();
+
+            com.google.firebase.messaging.Message.Builder builder = com.google.firebase.messaging.Message.builder()
+                    .setToken(token)
+                    .setNotification(notification)
+                    .setWebpushConfig(webpushConfig);
+
+            if (data != null && !data.isEmpty()) {
+                builder.putAllData(data);
+            }
+
+            com.google.firebase.messaging.Message message = builder.build();
+
+            try {
+                String response = com.google.firebase.messaging.FirebaseMessaging.getInstance().send(message);
+                String tokenPrefix = token.substring(0, Math.min(12, token.length()));
+                System.out.println("[AdminSDK][FCM] Test sent. tokenPrefix=" + tokenPrefix + " title='" + title + "' response=" + response);
+                return ResponseEntity.ok(Map.of("sent", true, "messageId", response));
+            } catch (com.google.firebase.messaging.FirebaseMessagingException e) {
+                String tokenPrefix = token.substring(0, Math.min(12, token.length()));
+                System.out.println("[AdminSDK][FCM] Test failed. tokenPrefix=" + tokenPrefix + " errorCode=" + e.getErrorCode() + " message=" + e.getMessage());
+                return ResponseEntity.ok(Map.of("sent", false, "errorCode", e.getErrorCode(), "message", e.getMessage()));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed: " + ex.getMessage());
+        }
     }
 
     @GetMapping("/{vendorId}/vendorByBookings")
@@ -496,11 +568,38 @@ public class WtlAdminController {
             @PathVariable int vendorDriverId) {
 
         // Call the service method to assign vendor
+        System.out.println("[API] assignVendorDriverToBooking bookingId=" + bookingId + " vendorDriverId=" + vendorDriverId);
         Booking updatedBooking = bookingService.assignVendorDriverToBooking(bookingId, vendorDriverId);
 
         if (updatedBooking == null) {
             // If the booking or vendor was not found, return a 404 Not Found
             return ResponseEntity.notFound().build();
+        }
+
+        // Always attempt to notify the driver in realtime if a driver token exists
+        try {
+            if (updatedBooking.getVendorDriver() != null && updatedBooking.getVendorDriver().getFcmToken() != null
+                    && !updatedBooking.getVendorDriver().getFcmToken().isBlank()) {
+                Map<String, String> data = new HashMap<>();
+                data.put("type", "TRIP_ASSIGNED");
+                data.put("bookingId", String.valueOf(updatedBooking.getBookid()));
+                data.put("pickup", String.valueOf(updatedBooking.getUserPickup()));
+                data.put("drop", String.valueOf(updatedBooking.getUserDrop()));
+                data.put("tripType", String.valueOf(updatedBooking.getTripType()));
+                data.put("date", String.valueOf(updatedBooking.getDate()));
+                data.put("time", String.valueOf(updatedBooking.getTime()));
+
+                String title = "New Trip Assigned";
+                String body = "Trip #" + updatedBooking.getBookid() + " assigned. Pickup: " + updatedBooking.getUserPickup();
+                String dtk = updatedBooking.getVendorDriver().getFcmToken();
+                System.out.println("[API] Sending FCM to driverId=" + updatedBooking.getVendorDriver().getVendorDriverId()
+                        + " tokenPrefix=" + dtk.substring(0, Math.min(12, dtk.length())));
+                notificationService.sendToToken(dtk, title, body, data);
+            } else {
+                System.out.println("[API] Driver token missing, skipping driver FCM.");
+            }
+        } catch (Exception e) {
+            System.out.println("[API] Driver FCM send failed: " + e.getMessage());
         }
 
         if (updatedBooking.getVendor() == null || updatedBooking.getVendorCab() == null) {
@@ -703,28 +802,29 @@ public class WtlAdminController {
         booking.setBookingType(bookingType);
         booking.setDescription(description);
         booking.setCarrier(carrier);
-        booking.setName(name);
-        booking.setEmail(email);
-        booking.setPhone(phone);
-        booking.setDriverEnterOtpTimePreStarted(LocalDateTime.parse(driverEnterOtpTimePreStarted));
-        booking.setStartOdometer(odoometerStarted);
-        booking.setOdoometerEnterTimeStarted(LocalDateTime.parse(odoometerEnterTimeStarted));
-        booking.setDriverEnterOtpTimePostTrip(LocalDateTime.parse(driverEnterOtpTimePostTrip));
-        booking.setEndOdometer(odometerEnding);
-        booking.setOdoometerEnterTimeEnding(LocalDateTime.parse(odoometerEnterTimeEnding));
 
-        // ✅ Set the saved CarRentalUser
+        // Guard parsing of optional date-time fields to avoid NPE when frontend omits them
+        if (driverEnterOtpTimePreStarted != null && !driverEnterOtpTimePreStarted.isBlank()) {
+            booking.setDriverEnterOtpTimePreStarted(LocalDateTime.parse(driverEnterOtpTimePreStarted));
+        }
+        booking.setStartOdometer(odoometerStarted);
+        if (odoometerEnterTimeStarted != null && !odoometerEnterTimeStarted.isBlank()) {
+            booking.setOdoometerEnterTimeStarted(LocalDateTime.parse(odoometerEnterTimeStarted));
+        }
+        if (driverEnterOtpTimePostTrip != null && !driverEnterOtpTimePostTrip.isBlank()) {
+            booking.setDriverEnterOtpTimePostTrip(LocalDateTime.parse(driverEnterOtpTimePostTrip));
+        }
+        booking.setEndOdometer(odometerEnding);
+        if (odoometerEnterTimeEnding != null && !odoometerEnterTimeEnding.isBlank()) {
+            booking.setOdoometerEnterTimeEnding(LocalDateTime.parse(odoometerEnterTimeEnding));
+        }
+
+        // Set the saved CarRentalUser
         booking.setCarRentalUser(carRental);
 
-        // ✅ Now save the booking
+        // Persist and return
         bookingRepo.save(booking);
-
         return "Booking created successfully!";
-    }
-
-    @PostMapping("/c")
-    public Booking creatBooking(@RequestBody Booking b) {
-        return this.bookingRepo.save(b);
     }
 
     @GetMapping("/get/{sourceCity}/{sourceState}/{destinationCity}/{destinationState}")

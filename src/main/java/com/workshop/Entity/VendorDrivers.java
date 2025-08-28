@@ -1,6 +1,7 @@
 package com.workshop.Entity;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -65,6 +66,12 @@ public class VendorDrivers {
 	@Column(nullable = true)
 	private Double driverLongitude;
 
+	@Column(nullable = true, length = 255)
+	private String fcmToken;
+
+	@Column(nullable = true)
+	private LocalDateTime fcmUpdatedAt;
+
 	@JsonBackReference
 	// @ManyToOne(fetch = FetchType.LAZY)
 	@ManyToOne
@@ -88,7 +95,7 @@ public class VendorDrivers {
 	public VendorDrivers(int vendorDriverId, String driverName, String contactNo, String altContactNo, String address,
 			String driverImage, String driverSelfie, String dLNo, String pvcNo, String dLnoImage, String pvcImage,
 			String driverDoc1Image, String driverDoc2Image, String driverDoc3Image, String emailId,
-			String driverOtherDetails, Vendor vendor, List<Booking> booking, String role, String password, Double driverLatitude, Double driverLongitude) {
+			String driverOtherDetails, Vendor vendor, List<Booking> booking, String role, String password, Double driverLatitude, Double driverLongitude, String fcmToken, LocalDateTime fcmUpdatedAt) {
 		this.vendorDriverId = vendorDriverId;
 		this.driverName = driverName;
 		this.contactNo = contactNo;
@@ -108,9 +115,11 @@ public class VendorDrivers {
 		this.vendor = vendor;
 		this.booking = booking;
 		this.role=role;
-this.password=password;
-this.driverLatitude=driverLatitude;
-this.driverLongitude=driverLongitude;
+		this.password=password;
+		this.driverLatitude=driverLatitude;
+		this.driverLongitude=driverLongitude;
+		this.fcmToken = fcmToken;
+		this.fcmUpdatedAt = fcmUpdatedAt;
 	}
 
 	public int getVendorDriverId() {
@@ -289,10 +298,20 @@ this.driverLongitude=driverLongitude;
 		this.driverLongitude = driverLongitude;
 	}
 
-	
+	public String getFcmToken() {
+		return fcmToken;
+	}
 
-	
+	public void setFcmToken(String fcmToken) {
+		this.fcmToken = fcmToken;
+	}
 
-	
+	public LocalDateTime getFcmUpdatedAt() {
+		return fcmUpdatedAt;
+	}
+
+	public void setFcmUpdatedAt(LocalDateTime fcmUpdatedAt) {
+		this.fcmUpdatedAt = fcmUpdatedAt;
+	}
 
 }
